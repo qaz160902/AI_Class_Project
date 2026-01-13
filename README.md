@@ -36,4 +36,35 @@
 *   **Vue 3 / Flask**: 全端網頁開發框架。
 
 ---
-*Created by 蘇弘舉*
+
+## 🤖 Gemini CLI 斜線指令 (Slash Commands)
+
+本專案在開發過程中使用 Gemini CLI 進行輔助，以下是完整的可用指令清單：
+
+| 指令 (Command) | 說明 (Description) |
+| :--- | :--- |
+| `/about` | Show version info (顯示版本資訊) |
+| `/auth` | Manage authentication (管理登入驗證) |
+| `/bug` | Submit a bug report (回報錯誤) |
+| `/chat` | Manage conversation history (管理對話歷史) |
+| `/clear` | Clear the screen and conversation history (清除畫面與對話) |
+| `/compress` | Compresses the context by replacing it with a summary (壓縮上下文) |
+| `/copy` | Copy the last result or code snippet to clipboard (複製結果) |
+| `/docs` | Open full Gemini CLI documentation in your browser (開啟線上文件) |
+| `/directory` | Manage workspace directories (管理工作目錄) |
+| `/editor` | Set external editor preference (設定外部編輯器) |
+| `/extensions` | Manage extensions (管理擴充功能) |
+| `/help` | For help on gemini-cli (顯示幫助) |
+| `/ide` | Manage IDE integration (管理 IDE 整合) |
+| `/init` | Analyzes the project and creates a tailored GEMINI.md file (初始化專案分析) |
+| `/mcp` | Manage configured Model Context Protocol (MCP) servers (管理 MCP 伺服器) |
+| `/memory` | Commands for interacting with memory (記憶功能操作) |
+| `/model` | Opens a dialog to configure the model (設定 AI 模型) |
+| `/privacy` | Display the privacy notice (隱私權聲明) |
+| `/policies` | Manage policies (管理策略) |
+| `/quit` | Exit the cli (離開程式) |
+| `/resume` | Browse and resume auto-saved conversations (恢復先前的對話) |
+| `/stats` | Check session stats (查看統計資訊). Usage: `/stats [session\|model\|tools]` |
+
+---
+*AI 新秀計劃課程導師：蘇弘舉*

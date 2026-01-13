@@ -2,8 +2,13 @@ from google import genai
 import os
 from dotenv import load_dotenv
 
-# 載入 .env 檔案中的環境變數
-load_dotenv()
+# 取得目前腳本所在的目錄
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# 指定 .env 檔案的路徑 (在 Gemini 子目錄下)
+ENV_PATH = os.path.join(SCRIPT_DIR, "Gemini", ".env")
+
+# 載入指定路徑的 .env 檔案
+load_dotenv(ENV_PATH)
 
 # 從環境變數讀取 API Key
 API_KEY = os.getenv("GEMINI_API_KEY")

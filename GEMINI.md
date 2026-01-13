@@ -4,25 +4,35 @@
 
 # AI Class Project - Gemini Context
 
-本目錄 `D:\AWORKSPACE\Github\AI_Class_Project` 是一個 AI 課程的實作集合，包含三個主要子專案，涵蓋電腦視覺、影像辨識模型應用以及全端網頁開發。
+本目錄 `D:\AWORKSPACE\Github\AI_Class_Project` 是一個 AI 課程的實作集合，包含三個主要子專案，涵蓋電腦視覺、影像辨識模型應用、生成式 AI 助理以及全端網頁開發。
 
 ## 📂 專案結構概覽
 
-### 1. Project_Mediapipe_20260113 (MediaPipe 手勢應用)
-基於 Google MediaPipe 與 OpenCV 的手勢辨識與互動應用。
+### 1. Project_Mediapipe_20260113 (MediaPipe & GenAI Agent)
+基於 Google MediaPipe 的手勢應用，以及整合 Gemini 2.0 的智慧助理。
 
-*   **核心技術**: Python, MediaPipe, OpenCV
+*   **核心技術**: Python, MediaPipe, OpenCV, **LangChain, Gemini 2.0 Flash**
 *   **主要檔案**:
+    *   `calendar_agent.py`: **[NEW]** 基於 LangChain 與 Gemini 的 Google 日曆 AI 助理。支援自然語言查詢、新增行程。
     *   `finger_ball.py`: 食指踢球遊戲，包含物理碰撞模擬。
-    *   `fruit_ninja.py`: 水果忍者手勢遊戲 (推測)。
-    *   `gesture_alt_tab.py`: 手勢控制視窗切換 (推測)。
-    *   `recognize_hand.py`, `TestHand.py`: 手部辨識測試腳本。
-*   **模型**: `model/gesture_recognizer.task`
+    *   `fruit_ninja.py`: 水果忍者手勢遊戲。
+    *   `test_gemini_new.py`: Gemini API 連線測試腳本。
+*   **模型**:
+    *   手勢: `model/gesture_recognizer.task`
+    *   LLM: `gemini-2.0-flash-exp` (用於 Agent)
+*   **環境設定 (.env)**:
+    *   請在 `Project_Mediapipe_20260113/Gemini/` 下建立 `.env` 檔案，並設定 `GEMINI_API_KEY`。
+    *   Google Calendar 憑證 `credentials.json` 需放置於同目錄 (需設定為 Desktop App 類型)。
 *   **如何執行**:
-    ```bash
-    cd Project_Mediapipe_20260113
-    python finger_ball.py
-    ```
+    *   **AI 日曆助理**:
+        ```bash
+        cd Project_Mediapipe_20260113
+        python calendar_agent.py
+        ```
+    *   **手勢遊戲**:
+        ```bash
+        python finger_ball.py
+        ```
 
 ### 2. Project_Teachable_20260108 (Teachable Machine 影像辨識)
 整合 Google Teachable Machine 匯出模型與 CustomTkinter GUI 的即時影像辨識系統。
@@ -67,11 +77,14 @@
 ## 🛠️ 開發慣例與注意事項
 
 1.  **環境管理**: 建議為每個 Python 子專案建立獨立的虛擬環境 (Virtual Environment)，避免套件衝突。
-    *   例如 Teachable Machine 專案需要 TensorFlow，而 Mediapipe 專案需要 MediaPipe。
+    *   Teachable Machine: 需要 TensorFlow。
+    *   Mediapipe & Agent: 需要 MediaPipe, LangChain, Google GenAI。
 2.  **編碼風格**:
-    *   Python: 遵循 PEP 8 (Snake case `function_name`)。
-    *   Vue/JS: Component 命名使用 PascalCase (`CalendarView.vue`)。
-3.  **路徑處理**: 專案中多處使用 `os.path` 處理模型路徑，確保跨平台相容性。
+    *   Python: 遵循 PEP 8。
+    *   Vue/JS: Component 命名使用 PascalCase。
+3.  **安全性**:
+    *   **絕對不要**將 `.env`, `credentials.json`, `token.json` 上傳至 GitHub。
+    *   已設定 `.gitignore` 自動排除這些敏感檔案。
 
 ## 📝 常用指令備忘
 

@@ -1,0 +1,9 @@
+
+# Google API Auth Files
+credentials.json
+token.json
+
+# Environment Variables and Secrets
+.env
+.env.local
+.env.*

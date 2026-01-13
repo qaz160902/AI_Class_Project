@@ -1,25 +1,20 @@
 import os
+import json
 from dotenv import load_dotenv
-from langchain_google_community import GoogleCalendarToolkit
+from langchain_google_community import CalendarToolkit
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.agents import create_react_agent, AgentExecutor
-from langchain import hub
+from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
 
 # === 設定路徑 ===
-# 取得目前腳本所在的目錄
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# 設定 Gemini 子目錄路徑
 GEMINI_DIR = os.path.join(SCRIPT_DIR, "Gemini")
-# 設定各個檔案的絕對路徑
 ENV_PATH = os.path.join(GEMINI_DIR, ".env")
 CREDENTIALS_PATH = os.path.join(GEMINI_DIR, "credentials.json")
 TOKEN_PATH = os.path.join(GEMINI_DIR, "token.json")
 
 # === 1. 環境設定 ===
-# 載入 .env 檔案
 if os.path.exists(ENV_PATH):
     load_dotenv(ENV_PATH)
-    # 將 GEMINI_API_KEY 轉為 GOOGLE_API_KEY (LangChain 預設使用 GOOGLE_API_KEY)
     if "GEMINI_API_KEY" in os.environ:
         os.environ["GOOGLE_API_KEY"] = os.environ["GEMINI_API_KEY"]
 else:
@@ -27,57 +22,95 @@ else:
 
 # === 2. 初始化日曆工具 ===
 print("初始化 Google Calendar 工具...")
-print(f"憑證路徑: {CREDENTIALS_PATH}")
+from langchain_google_community.calendar.utils import build_calendar_service
+from langchain_google_community._utils import get_google_credentials
 
-# 確保 credentials.json 存在
-if not os.path.exists(CREDENTIALS_PATH):
-    print("錯誤: 找不到 credentials.json，請確認檔案是否在 Gemini 資料夾中。")
+try:
+    creds = get_google_credentials(
+        scopes=["https://www.googleapis.com/auth/calendar"],
+        token_file=TOKEN_PATH,
+        client_secrets_file=CREDENTIALS_PATH
+    )
+    calendar_service = build_calendar_service(credentials=creds)
+    toolkit = CalendarToolkit(api_resource=calendar_service)
+    tools = toolkit.get_tools()
+    tools_dict = {tool.name: tool for tool in tools}
+    print("Google Calendar 工具初始化成功。")
+except Exception as e:
+    print(f"初始化工具時發生錯誤: {e}")
     exit(1)
 
-# 初始化 Toolkit
-# 注意: 這會嘗試讀取 token_file，如果過期或不存在，會使用 credentials_file 進行 OAuth 登入流程
-toolkit = GoogleCalendarToolkit(
-    credentials_file=CREDENTIALS_PATH,
-    token_file=TOKEN_PATH,
-    read_only=False  # 設為 False 才能新增行程
-)
-tools = toolkit.get_tools()
+# === 3. 設定 Gemini 模型並綁定工具 ===
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+llm_with_tools = llm.bind_tools(tools)
 
-# === 3. 設定 Gemini 模型 ===
-# 使用 gemini-2.0-flash (依您的需求)
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+# === 4. 執行 Agent 邏輯 (支援記憶) ===
+def run_calendar_agent(user_query: str, chat_history: list):
+    print(f"\n[處理中]: {user_query}")
+    
+    # 將新的使用者訊息加入歷史紀錄
+    chat_history.append(HumanMessage(content=user_query))
+    
+    # 建立本次執行的暫時訊息列表 (避免汙染主歷史紀錄，主要用於工具呼叫的來回)
+    # 注意: 這裡我們直接使用 chat_history，因為我們希望工具呼叫的過程也被模型記住
+    # 但為了避免 token 爆炸，實際應用中通常會做修剪。這裡為了簡單演示記憶，直接使用。
+    
+    # 限制最多 5 次工具互動防止死迴圈
+    for i in range(5):
+        response = llm_with_tools.invoke(chat_history)
+        chat_history.append(response) # 將模型的初步回應 (可能包含工具呼叫) 加入歷史
+        
+        # 如果模型沒有要呼叫工具，則回傳內容
+        if not response.tool_calls:
+            return response.content
+        
+        # 模型想要呼叫工具
+        for tool_call in response.tool_calls:
+            tool_name = tool_call["name"]
+            tool_args = tool_call["args"]
+            print(f"  -> 呼叫工具: {tool_name}")
+            
+            if tool_name in tools_dict:
+                try:
+                    observation = tools_dict[tool_name].invoke(tool_args)
+                    chat_history.append(ToolMessage(content=str(observation), tool_call_id=tool_call["id"]))
+                except Exception as e:
+                    chat_history.append(ToolMessage(content=f"工具執行錯誤: {e}", tool_call_id=tool_call["id"]))
+            else:
+                chat_history.append(ToolMessage(content=f"錯誤: 找不到工具 {tool_name}", tool_call_id=tool_call["id"]))
 
-# === 4. 建立 Agent ===
-print("建立 AI Agent...")
-# 使用 LangChain Hub 的標準React Prompt
-prompt = hub.pull("hwchase17/react")
-
-agent = create_react_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    return "Agent 達到最大互動次數，無法完成請求。"
 
 # === 5. 互動迴圈 ===
 if __name__ == "__main__":
-    print("\n=== Google Calendar AI Agent ===")
+    print("\n=== Google Calendar AI Agent (具備對話記憶) ===")
     print("輸入 'exit' 或 'quit' 離開")
-    print("首次執行時，請留意瀏覽器跳出的 Google 授權視窗。")
+    print("輸入 'clear' 清除記憶")
     print("================================\n")
 
-    # 首次測試
-    initial_query = "幫我查看我明天下午有什麼會議？"
-    print(f"正在執行測試指令: {initial_query}")
-    try:
-        response = agent_executor.invoke({"input": initial_query})
-        print(f"\nAI 回覆: {response['output']}")
-    except Exception as e:
-        print(f"發生錯誤: {e}")
+    # 初始化對話歷史
+    chat_history = []
 
     while True:
-        user_input = input("\n請輸入指令 (例如: 新增一個後天早上的會議): ")
+        user_input = input("\n您的指令: ")
+        
         if user_input.lower() in ["exit", "quit"]:
             break
+        elif user_input.lower() == "clear":
+            chat_history = []
+            print("記憶已清除。")
+            continue
         
         try:
-            response = agent_executor.invoke({"input": user_input})
-            print(f"\nAI 回覆: {response['output']}")
+            result = run_calendar_agent(user_input, chat_history)
+            
+            # 優化輸出顯示: 如果是 list (通常包含 metadata)，只顯示 text 部分
+            if isinstance(result, list) and len(result) > 0 and 'text' in result[0]:
+                 print(f"\nAI 回覆: {result[0]['text']}")
+            elif isinstance(result, str):
+                 print(f"\nAI 回覆: {result}")
+            else:
+                 print(f"\nAI 回覆: {result}")
+
         except Exception as e:
             print(f"發生錯誤: {e}")

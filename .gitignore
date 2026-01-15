@@ -1,9 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.env.local
+.env.*
+env/
+venv/
+.venv/
+mp_env/
+
+# IDE / Editor
+.vscode/
+.idea/
 
 # Google API Auth Files
 credentials.json
 token.json
 
-# Environment Variables and Secrets
-.env
-.env.local
-.env.*
+# Models (Optional: un-comment if models are too large)
+# *.pth
+# *.h5
+# *.task
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db

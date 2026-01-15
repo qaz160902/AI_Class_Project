@@ -8,33 +8,41 @@
 
 ## 📂 專案結構概覽
 
-### 1. Project_Mediapipe_20260113 (MediaPipe & GenAI Agent)
+### 1. Mediapipe_GenAI (MediaPipe & GenAI Agent)
 基於 Google MediaPipe 的手勢應用，以及整合 Gemini 2.0 的智慧助理。
 
-*   **核心技術**: Python, MediaPipe, OpenCV, **LangChain, Gemini 2.0 Flash**
-*   **主要檔案**:
-    *   `calendar_agent.py`: **[NEW]** 基於 LangChain 與 Gemini 的 Google 日曆 AI 助理。支援自然語言查詢、新增行程。
-    *   `finger_ball.py`: 食指踢球遊戲，包含物理碰撞模擬。
-    *   `fruit_ninja.py`: 水果忍者手勢遊戲。
-    *   `test_gemini_new.py`: Gemini API 連線測試腳本。
-*   **模型**:
-    *   手勢: `model/gesture_recognizer.task`
-    *   LLM: `gemini-2.0-flash-exp` (用於 Agent)
-*   **環境設定 (.env)**:
-    *   請在 `Project_Mediapipe_20260113/Gemini/` 下建立 `.env` 檔案，並設定 `GEMINI_API_KEY`。
-    *   Google Calendar 憑證 `credentials.json` 需放置於同目錄 (需設定為 Desktop App 類型)。
+*   **核心技術**: Python, MediaPipe, OpenCV, **LangChain, Gemini 2.0 Flash**, **PyTorch (CUDA enabled), Tkinter**
+*   **主要檔案 (apps/)**:
+    *   `apps/agent/calendar_agent.py`: 基於 LangChain 與 Gemini 的 Google 日曆 AI 助理。
+    *   `apps/gesture_digits/gesture_digit_gui.py`: AI 手勢手寫數字辨識系統。
+    *   `apps/games/finger_ball.py`: 食指踢球遊戲。
+    *   `apps/games/fruit_ninja.py`: 水果忍者手勢遊戲。
+*   **工具 (tools/)**:
+    *   `tools/mnist_train/mnist_gui.py`: 靜態圖片手寫數字辨識工具。
+*   **模型 (models/)**:
+    *   手勢: `models/gesture_recognizer.task`
+    *   影像辨識: `models/mnist_cnn.pth` (PyTorch CNN 手寫數字模型)
+*   **環境設定 (config/)**:
+    *   請在 `Mediapipe_GenAI/config/` 下建立 `.env` 檔案，並設定 `GEMINI_API_KEY`。
+    *   Google Calendar 憑證 `credentials.json` 需放置於同目錄。
 *   **如何執行**:
     *   **AI 日曆助理**:
         ```bash
-        cd Project_Mediapipe_20260113
-        python calendar_agent.py
+        cd Mediapipe_GenAI
+        python apps/agent/calendar_agent.py
+        ```
+    *   **手勢手寫辨識**:
+        ```bash
+        cd Mediapipe_GenAI
+        python apps/gesture_digits/gesture_digit_gui.py
         ```
     *   **手勢遊戲**:
         ```bash
-        python finger_ball.py
+        cd Mediapipe_GenAI
+        python apps/games/finger_ball.py
         ```
 
-### 2. Project_Teachable_20260108 (Teachable Machine 影像辨識)
+### 2. TeachableMachine_Vision (Teachable Machine 影像辨識)
 整合 Google Teachable Machine 匯出模型與 CustomTkinter GUI 的即時影像辨識系統。
 
 *   **核心技術**: Python, TensorFlow/Keras, OpenCV, CustomTkinter
@@ -45,17 +53,15 @@
 *   **模型**: `model/keras_model.h5`, `model/labels.txt`
 *   **如何執行**:
     ```bash
-    cd Project_Teachable_20260108
-    # 安裝依賴 (若尚未安裝)
-    # pip install opencv-python numpy pillow customtkinter tensorflow tf-keras
+    cd TeachableMachine_Vision
     python gemini_gui.py
     ```
 
-### 3. Project_ToDoList_20260107 (全端待辦事項與日曆)
+### 3. FullStack_ToDoList (全端待辦事項與日曆)
 前後端分離的個人生產力工具。
 
 *   **核心技術**:
-    *   **Frontend**: Vue 3, Vite, FullCalendar/V-Calendar (推測)
+    *   **Frontend**: Vue 3, Vite, FullCalendar/V-Calendar
     *   **Backend**: Python Flask, SQLite, SQLAlchemy
 *   **目錄結構**:
     *   `backend/`: Flask API Server (`app.py`, `models.py`)
@@ -63,14 +69,12 @@
 *   **如何執行**:
     *   **後端**:
         ```bash
-        cd Project_ToDoList_20260107/todo-project/backend
-        # pip install -r requirements.txt
+        cd FullStack_ToDoList/todo-project/backend
         python app.py
         ```
     *   **前端**:
         ```bash
-        cd Project_ToDoList_20260107/todo-project/frontend
-        # npm install
+        cd FullStack_ToDoList/todo-project/frontend
         npm run dev
         ```
 
@@ -78,7 +82,7 @@
 
 1.  **環境管理**: 建議為每個 Python 子專案建立獨立的虛擬環境 (Virtual Environment)，避免套件衝突。
     *   Teachable Machine: 需要 TensorFlow。
-    *   Mediapipe & Agent: 需要 MediaPipe, LangChain, Google GenAI。
+    *   Mediapipe & Agent: 需要 MediaPipe, LangChain, Google GenAI, PyTorch (建議安裝 CUDA 版本)。
 2.  **編碼風格**:
     *   Python: 遵循 PEP 8。
     *   Vue/JS: Component 命名使用 PascalCase。
